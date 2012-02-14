@@ -135,11 +135,11 @@ jQuery(function(){
 		for(var i = 0; i < 8; i++){
 			dientes.push(new DienteModel(18 - i, i * 25, 0));	
 		}
-		for(var i = 3; i < 8; i++){
-			dientes.push(new DienteModel(55 - i, i * 25, 1 * 40));	
+		for(var i = 0; i < 5; i++){
+			dientes.push(new DienteModel(55 - i, (i + 3) * 25, 1 * 40));	
 		}
-		for(var i = 3; i < 8; i++){
-			dientes.push(new DienteModel(85 - i, i * 25, 2 * 40));	
+		for(var i = 0; i < 5; i++){
+			dientes.push(new DienteModel(85 - i, (i + 3) * 25, 2 * 40));	
 		}
 		for(var i = 0; i < 8; i++){
 			dientes.push(new DienteModel(48 - i, i * 25, 3 * 40));	
