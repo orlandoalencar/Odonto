@@ -48,6 +48,7 @@ jQuery(function(){
 		caras['X'] = caraCompleto;
 		caras['Z'] = caraIzquierda;
 		caras['D'] = caraDerecha;
+		caras['I'] = caraInferior;
 
 		for (var i = tratamientosAplicadosAlDiente.length - 1; i >= 0; i--) {
 			var t = tratamientosAplicadosAlDiente[i];
@@ -79,7 +80,7 @@ jQuery(function(){
 				//TODO: Validaciones de si la cara tiene tratamiento o no, etc...
 
 				vm.tratamientosAplicados.push({diente: diente, cara: cara, tratamiento: tratamiento});
-				vm.tratamientoSeleccionado(null);
+				//vm.tratamientoSeleccionado(null);
 				
 				//Actualizo el SVG
 				renderSvg();
