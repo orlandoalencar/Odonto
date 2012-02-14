@@ -9,90 +9,87 @@ jQuery(function(){
 		var defaultPolygon = {fill: 'white', stroke: 'navy', strokeWidth: 0.5};
 		var dienteGroup = svg.group(parentGroup, {transform: 'translate(' + x + ',' + y + ')'});
 
-		var caraSuperior = svg.polygon(dienteGroup,
-			[[0,0],[20,0],[15,5],[5,5]],  
-		    defaultPolygon);
-	    caraSuperior = $(caraSuperior).data('cara', 'S');
-		
-		var caraInferior =  svg.polygon(dienteGroup,
-			[[5,15],[15,15],[20,20],[0,20]],  
-		    defaultPolygon);			
-		caraInferior = $(caraInferior).data('cara', 'I');
+		var calculatePolygon = function(cara){
+			switch(cara){
+				case 'S': //Superior
+					return [[0,0],[20,0],[15,5],[5,5]];
+				case 'I': //Inferior
+					return [[5,15],[15,15],[20,20],[0,20]];
+				case 'D': //Derecha
+					return [[15,5],[20,0],[20,20],[15,15]];
+				case 'Z': //Izquierda
+					return [[0,0],[5,5],[5,15],[0,20]];
+				case 'C': //Central
+					return [[5,5],[15,5],[15,15],[5,15]];
+				default:
+					throw new Error('La cara: ' + cara + ' no es una cara valida.');
+			}			
+		}
 
-		var caraDerecha = svg.polygon(dienteGroup,
-			[[15,5],[20,0],[20,20],[15,15]],  
-		    defaultPolygon);
-	    caraDerecha = $(caraDerecha).data('cara', 'D');
-		
-		var caraIzquierda = svg.polygon(dienteGroup,
-			[[0,0],[5,5],[5,15],[0,20]],  
-		    defaultPolygon);
-		caraIzquierda = $(caraIzquierda).data('cara', 'Z');		    
-		
-		var caraCentral = svg.polygon(dienteGroup,
-			[[5,5],[15,5],[15,15],[5,15]],  
-		    defaultPolygon);	
-		caraCentral = $(caraCentral).data('cara', 'C');		    
-	    
+		var createCara = function(cara){
+			var polygonPoints = calculatePolygon(cara);
+			return $(svg.polygon(dienteGroup, polygonPoints, defaultPolygon))
+				.data('cara', cara)
+		    	.click(function(){
+		    		var me = $(this);
+		    		var cara = me.data('cara');
+					
+					if(!vm.tratamientoSeleccionado()){
+						alert('Debe seleccionar un tratamiento previamente.');	
+						return false;
+					}
+
+					//Validaciones
+					//Validamos el tratamiento
+					var tratamiento = vm.tratamientoSeleccionado();
+
+					if(cara == 'X' && !tratamiento.aplicaDiente){
+						alert('El tratamiento seleccionado no se puede aplicar a toda la pieza.');
+						return false;
+					}
+					if(cara != 'X' && !tratamiento.aplicaCara){
+						alert('El tratamiento seleccionado no se puede aplicar a una cara.');
+						return false;
+					}
+					
+					//TODO: Validaciones de si la cara tiene tratamiento o no, etc...
+					vm.tratamientosAplicados.push({diente: diente, cara: cara, tratamiento: tratamiento});
+					
+					//Actualizo el SVG
+					renderSvg();
+		    	}).mouseenter(function(){
+		    		var me = $(this);
+		    		me.data('oldFill', me.attr('fill'));
+		    		me.attr('fill', 'yellow');
+		    	}).mouseleave(function(){
+		    		var me = $(this);
+		    		me.attr('fill', me.data('oldFill'));
+		    	});	
+		};
+	        	
+		//Creo las cara SVG y las agrego como un diccionario
+		var caras = ['S', 'I', 'D', 'Z', 'C'];
+		for (var i = caras.length - 1; i >= 0; i--) {
+			var cara = caras[i];
+			caras[cara] = createCara(cara);
+		};
+
+		//Creo el diente completo y lo agrego a las caras
 	    var caraCompleto = svg.text(dienteGroup, 6, 30, diente.id.toString(), 
 	    	{fill: 'navy', stroke: 'navy', strokeWidth: 0.1, style: 'font-size: 6pt;font-weight:normal'});
     	caraCompleto = $(caraCompleto).data('cara', 'X');
-    	
+
+		caras['X'] = caraCompleto;
+
 		//Busco los tratamientos aplicados al diente
 		var tratamientosAplicadosAlDiente = ko.utils.arrayFilter(vm.tratamientosAplicados(), function(t){
 			return t.diente.id == diente.id;
 		});
-		var caras = [];
-		caras['S'] = caraSuperior;
-		caras['C'] = caraCentral;
-		caras['X'] = caraCompleto;
-		caras['Z'] = caraIzquierda;
-		caras['D'] = caraDerecha;
-		caras['I'] = caraInferior;
 
 		for (var i = tratamientosAplicadosAlDiente.length - 1; i >= 0; i--) {
 			var t = tratamientosAplicadosAlDiente[i];
 			caras[t.cara].attr('fill', 'red');
 		};
-
-		$.each([caraCentral, caraIzquierda, caraDerecha, caraInferior, caraSuperior, caraCompleto], function(index, value){
-	    	value.click(function(){
-	    		var me = $(this);
-	    		var cara = me.data('cara');
-				
-				if(!vm.tratamientoSeleccionado()){
-					alert('Debe seleccionar un tratamiento previamente.');	
-					return false;
-				}
-
-				//Validaciones
-				//Validamos el tratamiento
-				var tratamiento = vm.tratamientoSeleccionado();
-
-				if(cara == 'X' && !tratamiento.aplicaDiente){
-					alert('El tratamiento seleccionado no se puede aplicar a toda la pieza.');
-					return false;
-				}
-				if(cara != 'X' && !tratamiento.aplicaCara){
-					alert('El tratamiento seleccionado no se puede aplicar a una cara.');
-					return false;
-				}
-				//TODO: Validaciones de si la cara tiene tratamiento o no, etc...
-
-				vm.tratamientosAplicados.push({diente: diente, cara: cara, tratamiento: tratamiento});
-				//vm.tratamientoSeleccionado(null);
-				
-				//Actualizo el SVG
-				renderSvg();
-	    	}).mouseenter(function(){
-	    		var me = $(this);
-	    		me.data('oldFill', me.attr('fill'));
-	    		me.attr('fill', 'yellow');
-	    	}).mouseleave(function(){
-	    		var me = $(this);
-	    		me.attr('fill', me.data('oldFill'));
-	    	});			
-		});
 	};
 
 	function renderSvg(){
@@ -117,7 +114,7 @@ jQuery(function(){
 		self.y = y;		
 	};
 
-	function ViewModel(){
+	function OdontogramaModel(){
 		var self = this;
 
 		self.tratamientosPosibles = ko.observableArray([]);
@@ -145,32 +142,23 @@ jQuery(function(){
 			dientes.push(new DienteModel(48 - i, i * 25, 3 * 40));	
 		}
 		//Dientes derechos
-		var initialValues = [];
-		initialValues[0] = 21;
-		initialValues[1] = 61;
-		initialValues[2] = 71;
-		initialValues[3] = 31;
-
-		for (var row = 0; row < 4; row++) {
-			var finalColumn = (row === 0 || row === 3) ? 8 : 5;
-			for(var i = 0; i < finalColumn; i++){
-				dientes.push(new DienteModel(initialValues[row] + i, i * 25 + 210, row * 40));	
-			}			
-		};
-		// for(var i = 0; i < 5; i++){
-		// 	dientes.push(new DienteModel(61 + i, i * 25 + 210, 1 * 40));	
-		// }
-		// for(var i = 0; i < 5; i++){
-		// 	dientes.push(new DienteModel(71 + i, i * 25 + 210, 2 * 40));	
-		// }
-		// for(var i = 0; i < 8; i++){
-		// 	dientes.push(new DienteModel(31 + i, i * 25 + 210, 3 * 40));	
-		// }
+		for(var i = 0; i < 8; i++){
+			dientes.push(new DienteModel(21 + i, i * 25 + 210, 0));	
+		}
+		for(var i = 0; i < 5; i++){
+			dientes.push(new DienteModel(61 + i, i * 25 + 210, 1 * 40));	
+		}
+		for(var i = 0; i < 5; i++){
+			dientes.push(new DienteModel(71 + i, i * 25 + 210, 2 * 40));	
+		}
+		for(var i = 0; i < 8; i++){
+			dientes.push(new DienteModel(31 + i, i * 25 + 210, 3 * 40));	
+		}
 
 		self.dientes = ko.observableArray(dientes);
 	};
 
-	vm = new ViewModel();
+	vm = new OdontogramaModel();
 	
 	//Inicializo SVG
     $('#odontograma').svg({
