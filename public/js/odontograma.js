@@ -145,18 +145,27 @@ jQuery(function(){
 			dientes.push(new DienteModel(48 - i, i * 25, 3 * 40));	
 		}
 		//Dientes derechos
-		for(var i = 0; i < 8; i++){
-			dientes.push(new DienteModel(21 + i, i * 25 + 210, 0));	
-		}
-		for(var i = 0; i < 5; i++){
-			dientes.push(new DienteModel(61 + i, i * 25 + 210, 1 * 40));	
-		}
-		for(var i = 0; i < 5; i++){
-			dientes.push(new DienteModel(71 + i, i * 25 + 210, 2 * 40));	
-		}
-		for(var i = 0; i < 8; i++){
-			dientes.push(new DienteModel(31 + i, i * 25 + 210, 3 * 40));	
-		}
+		var initialValues = [];
+		initialValues[0] = 21;
+		initialValues[1] = 61;
+		initialValues[2] = 71;
+		initialValues[3] = 31;
+
+		for (var row = 0; row < 4; row++) {
+			var finalColumn = (row === 0 || row === 3) ? 8 : 5;
+			for(var i = 0; i < finalColumn; i++){
+				dientes.push(new DienteModel(initialValues[row] + i, i * 25 + 210, row * 40));	
+			}			
+		};
+		// for(var i = 0; i < 5; i++){
+		// 	dientes.push(new DienteModel(61 + i, i * 25 + 210, 1 * 40));	
+		// }
+		// for(var i = 0; i < 5; i++){
+		// 	dientes.push(new DienteModel(71 + i, i * 25 + 210, 2 * 40));	
+		// }
+		// for(var i = 0; i < 8; i++){
+		// 	dientes.push(new DienteModel(31 + i, i * 25 + 210, 3 * 40));	
+		// }
 
 		self.dientes = ko.observableArray(dientes);
 	};
