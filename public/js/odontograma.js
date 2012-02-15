@@ -1,4 +1,57 @@
-jQuery(function(){
+/**
+* jQuery Odontogram Plugin - by Walter Poch
+* Developed for using by Clip Solutions
+* http://wpoch.com.ar
+*/
+(function( $ ){
+
+	//View Models
+	function DienteModel(id, x, y){
+		var self = this;
+
+		self.id = id;	
+		self.x = x;
+		self.y = y;		
+	};
+
+	//Cargo los dientes
+	var dientes = [];
+	//Dientes izquierdos
+	for(var i = 0; i < 8; i++){
+		dientes.push(new DienteModel(18 - i, i * 25, 0));	
+	}
+	for(var i = 0; i < 5; i++){
+		dientes.push(new DienteModel(55 - i, (i + 3) * 25, 1 * 40));	
+	}
+	for(var i = 0; i < 5; i++){
+		dientes.push(new DienteModel(85 - i, (i + 3) * 25, 2 * 40));	
+	}
+	for(var i = 0; i < 8; i++){
+		dientes.push(new DienteModel(48 - i, i * 25, 3 * 40));	
+	}
+	//Dientes derechos
+	for(var i = 0; i < 8; i++){
+		dientes.push(new DienteModel(21 + i, i * 25 + 210, 0));	
+	}
+	for(var i = 0; i < 5; i++){
+		dientes.push(new DienteModel(61 + i, i * 25 + 210, 1 * 40));	
+	}
+	for(var i = 0; i < 5; i++){
+		dientes.push(new DienteModel(71 + i, i * 25 + 210, 2 * 40));	
+	}
+	for(var i = 0; i < 8; i++){
+		dientes.push(new DienteModel(31 + i, i * 25 + 210, 3 * 40));	
+	}		
+
+	// Private functions
+ 	function arrayFilter (array, predicate) {
+        array = array || [];
+        var result = [];
+        for (var i = 0, j = array.length; i < j; i++)
+            if (predicate(array[i]))
+                result.push(array[i]);
+        return result;
+    }
 
 	function drawDiente(svg, parentGroup, diente){
 		if(!diente) throw new Error('Error no se ha especificado el diente.');
@@ -34,27 +87,31 @@ jQuery(function(){
 		    		var me = $(this);
 		    		var cara = me.data('cara');
 					
-					if(!vm.tratamientoSeleccionado()){
+					if(!tratamientoSeleccionado){
 						alert('Debe seleccionar un tratamiento previamente.');	
 						return false;
 					}
 
 					//Validaciones
 					//Validamos el tratamiento
-					var tratamiento = vm.tratamientoSeleccionado();
-
-					if(cara == 'X' && !tratamiento.aplicaDiente){
+					if(cara == 'X' && !tratamientoSeleccionado.aplicaDiente){
 						alert('El tratamiento seleccionado no se puede aplicar a toda la pieza.');
 						return false;
 					}
-					if(cara != 'X' && !tratamiento.aplicaCara){
+					if(cara != 'X' && !tratamientoSeleccionado.aplicaCara){
 						alert('El tratamiento seleccionado no se puede aplicar a una cara.');
 						return false;
 					}
 					
 					//TODO: Validaciones de si la cara tiene tratamiento o no, etc...
-					vm.tratamientosAplicados.push({diente: diente, cara: cara, tratamiento: tratamiento});
-					
+					var tratamiento = {
+						diente: diente, 
+						cara: cara, 
+						tratamiento: tratamientoSeleccionado
+					};
+					tratamientosAplicados.push(tratamiento);
+					self.trigger('tratamientoAplicado.odontograma', tratamiento);
+
 					//Actualizo el SVG
 					renderSvg();
 		    	}).mouseenter(function(){
@@ -82,7 +139,7 @@ jQuery(function(){
 		caras['X'] = caraCompleto;
 
 		//Busco los tratamientos aplicados al diente
-		var tratamientosAplicadosAlDiente = ko.utils.arrayFilter(vm.tratamientosAplicados(), function(t){
+		var tratamientosAplicadosAlDiente = arrayFilter(tratamientosAplicados, function(t){
 			return t.diente.id == diente.id;
 		});
 
@@ -93,89 +150,69 @@ jQuery(function(){
 	};
 
 	function renderSvg(){
-		console.log('update render');
-
-		var svg = $('#odontograma').svg('get').clear();
-		var parentGroup = svg.group({transform: 'scale(1.5)'});
-		var dientes = vm.dientes();
+		var svg = self.svg('get').clear();
+		var parentGroup = svg.group({transform: 'scale('+settings.scale.toString()+')'});		
 		for (var i =  dientes.length - 1; i >= 0; i--) {
-			var diente =  dientes[i];
-			var dienteUnwrapped = ko.utils.unwrapObservable(diente); 
-			drawDiente(svg, parentGroup, dienteUnwrapped);
+			drawDiente(svg, parentGroup, dientes[i]);
 		};
 	}
 
-	//View Models
-	function DienteModel(id, x, y){
-		var self = this;
+	var defaults = {
+		width: '620px',
+		height: '250px',
+		scale: 1.5
+	};    	
 
-		self.id = id;	
-		self.x = x;
-		self.y = y;		
-	};
+	var settings;
 
-	function OdontogramaModel(){
-		var self = this;
+	var tratamientoSeleccionado;
+	var tratamientosAplicados = [];
 
-		self.tratamientosPosibles = ko.observableArray([]);
-		self.tratamientoSeleccionado = ko.observable(null);
-		self.tratamientosAplicados = ko.observableArray([]);
+	var self;
 
-		self.quitarTratamiento = function(tratamiento){
-			self.tratamientosAplicados.remove(tratamiento);
+  var methods = {
+    init : function( options ) { 
+	    settings = $.extend(defaults, options);
+      	return this.each(function(){
+      		//Init the SVG object
+      		self = $(this);
+  			self.svg({
+  				settings:{
+  					width: settings.width,
+  					height: settings.height
+  				}
+  			});
+
 			renderSvg();
-		}
+   		});      
+    },
+    setTratamiento: function(tratamiento){
+    	tratamientoSeleccionado = tratamiento;	
+    },
+    removeTratamiento : function(tratamiento) {
+    	console.log(tratamientosAplicados);
+      	tratamientosAplicados = arrayFilter(tratamientosAplicados, function(t){
+      		console.log(t);
+      		console.log(tratamiento);
+      		return t.cara != tratamiento.cara 
+      			&& t.diente.id != tratamiento.diente.id
+      			&& t.tratamiento.id != tratamiento.tratamiento.id;
+      	});
+      	console.log(tratamientosAplicados);
+    	renderSvg();
+    }
+  };
 
-		//Cargo los dientes
-		var dientes = [];
-		//Dientes izquierdos
-		for(var i = 0; i < 8; i++){
-			dientes.push(new DienteModel(18 - i, i * 25, 0));	
-		}
-		for(var i = 0; i < 5; i++){
-			dientes.push(new DienteModel(55 - i, (i + 3) * 25, 1 * 40));	
-		}
-		for(var i = 0; i < 5; i++){
-			dientes.push(new DienteModel(85 - i, (i + 3) * 25, 2 * 40));	
-		}
-		for(var i = 0; i < 8; i++){
-			dientes.push(new DienteModel(48 - i, i * 25, 3 * 40));	
-		}
-		//Dientes derechos
-		for(var i = 0; i < 8; i++){
-			dientes.push(new DienteModel(21 + i, i * 25 + 210, 0));	
-		}
-		for(var i = 0; i < 5; i++){
-			dientes.push(new DienteModel(61 + i, i * 25 + 210, 1 * 40));	
-		}
-		for(var i = 0; i < 5; i++){
-			dientes.push(new DienteModel(71 + i, i * 25 + 210, 2 * 40));	
-		}
-		for(var i = 0; i < 8; i++){
-			dientes.push(new DienteModel(31 + i, i * 25 + 210, 3 * 40));	
-		}
+  $.fn.odontograma = function( method ) {
+    
+    // Method calling logic
+    if ( methods[method] ) {
+      return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+    } else if ( typeof method === 'object' || ! method ) {
+      return methods.init.apply( this, arguments );
+    } else {
+      $.error( 'Method ' +  method + ' does not exist on jQuery.odontograma' );
+    }      
+  };
 
-		self.dientes = ko.observableArray(dientes);
-	};
-
-	vm = new OdontogramaModel();
-	
-	//Inicializo SVG
-    $('#odontograma').svg({
-        settings:{ width: '620px', height: '250px' }
-    });
-
-	ko.applyBindings(vm);
-
-	//TODO: Cargo el estado del odontograma
-	renderSvg();
-
-
-	//Cargo los tratamientos
-	$.getJSON('tratamientos.js', function(d){
-		for (var i = d.length - 1; i >= 0; i--) {
-			var tratamiento = d[i];
-			vm.tratamientosPosibles.push(tratamiento);
-		};		
-	});
-});
+})( jQuery );
