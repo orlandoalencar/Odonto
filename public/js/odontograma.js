@@ -190,15 +190,11 @@
     	tratamientoSeleccionado = tratamiento;	
     },
     removeTratamiento : function(tratamiento) {
-    	console.log(tratamientosAplicados);
       	tratamientosAplicados = arrayFilter(tratamientosAplicados, function(t){
-      		console.log(t);
-      		console.log(tratamiento);
-      		return t.cara != tratamiento.cara 
-      			&& t.diente.id != tratamiento.diente.id
-      			&& t.tratamiento.id != tratamiento.tratamiento.id;
+      		return !(t.cara == tratamiento.cara 
+      			&& t.diente.id == tratamiento.diente.id
+      			&& t.tratamiento.id == tratamiento.tratamiento.id);
       	});
-      	console.log(tratamientosAplicados);
     	renderSvg();
     }
   };
