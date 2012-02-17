@@ -26,7 +26,7 @@ $(function(){
 	var vm = new EdicionOdontograma();	
 	ko.applyBindings(vm);
 
-	//Cargo los tratamientos posibles
+	//Cargo los tratamientos
 	$.getJSON('tratamientos.js', function(d){
 		for (var i = d.length - 1; i >= 0; i--) {
 			var tratamiento = d[i];
@@ -34,17 +34,7 @@ $(function(){
 		};		
 	});
 
-	//Cargo el estado del Odontograma
-	$.getJSON('estado_odontograma_editable.js', function(d){
-		//Los cargo en el view model, para que se veam en la lista
-		for (var i = d.length - 1; i >= 0; i--) {
-			vm.tratamientosAplicados.push(d[i]);
-		};		
-		
-		$("#odontograma").odontograma({
-			tratamientosAplicados: d
-		}).bind('tratamientoAplicado.odontograma', function(evt, tratamiento){
-			vm.tratamientosAplicados.push(tratamiento);
-		});
-	});	
+	$("#odontograma").odontograma().bind('tratamientoAplicado.odontograma', function(evt, tratamiento){
+		vm.tratamientosAplicados.push(tratamiento);
+	});
 })

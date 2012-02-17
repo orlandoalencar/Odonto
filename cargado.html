@@ -44,27 +44,6 @@
       <h1>Clip Soluciones<h1>
     </header>
     <div id="main" role="main">      
-      <div id="tratamiento">
-        <h2>Tratamiento</h2>
-        <select 
-          data-bind=" options: tratamientosPosibles, 
-                      value: tratamientoSeleccionado, 
-                      optionsText: function(item){ return item.nombre; },
-                      optionsCaption: 'Seleccione un tratamiento...'">
-        </select>
-        <ul data-bind="foreach: tratamientosAplicados">
-          <li>
-            P<span data-bind="text: diente.id"></span><span data-bind="text: cara"></span>
-            -            
-            <span data-bind="text: tratamiento.nombre"></span>
-            | 
-            <a href="#" data-bind="click: $parent.quitarTratamiento">Eliminar</a>
-          </li>
-        </ul>
-        <div>
-          <button data-bind="click: guardar">Guardar</button>
-        </div>
-      </div>
       <div id="odontograma-wrapper">
         <h2>Odontograma</h2>
         <div id="odontograma"></div>
@@ -81,7 +60,7 @@
   <script defer src="public/js/jquery.svg.min.js"></script>  
   <script defer src="public/js/jquery.svggraph.min.js"></script>  
   <script defer src="public/js/odontograma.js"></script>
-  <script defer src="public/js/odontograma-new.js"></script>
+  <script defer src="public/js/odontograma-load.js"></script>
   <!-- end scripts-->
 
   <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
