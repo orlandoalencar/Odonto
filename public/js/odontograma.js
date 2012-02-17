@@ -79,10 +79,8 @@
 			}			
 		}
 
-		var createCara = function(cara){
-			var polygonPoints = calculatePolygon(cara);
-			return $(svg.polygon(dienteGroup, polygonPoints, defaultPolygon))
-				.data('cara', cara)
+		var attachEventsAndData = function(element, cara){
+			element.data('cara', cara)
 		    	.click(function(){
 		    		var me = $(this);
 		    		var cara = me.data('cara');
@@ -122,6 +120,12 @@
 		    		var me = $(this);
 		    		me.attr('fill', me.data('oldFill'));
 		    	});	
+	    	return element;						
+		}
+
+		var createCara = function(cara){
+			var polygonPoints = calculatePolygon(cara);
+			return attachEventsAndData($(svg.polygon(dienteGroup, polygonPoints, defaultPolygon)), cara);
 		};
 	        	
 		//Creo las cara SVG y las agrego como un diccionario
@@ -134,7 +138,7 @@
 		//Creo el diente completo y lo agrego a las caras
 	    var caraCompleto = svg.text(dienteGroup, 6, 30, diente.id.toString(), 
 	    	{fill: 'navy', stroke: 'navy', strokeWidth: 0.1, style: 'font-size: 6pt;font-weight:normal'});
-    	caraCompleto = $(caraCompleto).data('cara', 'X');
+    	caraCompleto = attachEventsAndData($(caraCompleto), 'X');
 
 		caras['X'] = caraCompleto;
 
