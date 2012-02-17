@@ -35,7 +35,7 @@ $(function(){
 	});
 
 	//Cargo el estado del Odontograma
-	$.getJSON('estado_odontograma_editable.js', function(d){
+	$.getJSON('editable-data.js', function(d){
 		//Los cargo en el view model, para que se veam en la lista
 		for (var i = d.length - 1; i >= 0; i--) {
 			vm.tratamientosAplicados.push(d[i]);

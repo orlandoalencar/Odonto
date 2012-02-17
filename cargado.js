@@ -1,6 +1,6 @@
 $(function(){
 	//Cargo el estado del Odontograma
-	$.getJSON('estado_odontograma.js', function(d){
+	$.getJSON('cargado-data.js', function(d){
 		$("#odontograma").odontograma({
 			tratamientosAplicados: d,
 			scale: 2,
